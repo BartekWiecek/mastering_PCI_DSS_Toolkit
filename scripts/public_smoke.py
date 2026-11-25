@@ -28,7 +28,14 @@ for attempt in range(12):
         print("Pages attempt",attempt+1,repr(e),flush=True)
         if attempt==11: raise
         time.sleep(15)
-report["checks"]["release_zip_bytes"]=check_bytes(fetch(REPO+"/releases/download/"+tag+"/"+archive))
+for attempt in range(16):
+    try:
+        report["checks"]["release_zip_bytes"]=check_bytes(fetch(REPO+"/releases/download/"+tag+"/"+archive))
+        break
+    except Exception as e:
+        print("Release attempt",attempt+1,repr(e),flush=True)
+        if attempt==15: raise
+        time.sleep(15)
 checksum=fetch(REPO+"/releases/download/"+tag+"/SHA256SUMS.txt").decode()
 assert checksum.strip()==digest+"  "+archive
 report["checks"]["release_checksum"]="PASS"

@@ -1,0 +1,46 @@
+name: Prepare exact stable reader archive
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build_stable_toolkit.py'
+      - '.github/workflows/prepare-stable.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: prepare-stable-v1
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Rebuild from the reviewed public RC19 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_stable_toolkit.py docs/downloads/PCI_DSS_Implementation_Toolkit_RC19.zip docs/downloads/PCI_DSS_Implementation_Toolkit_v1.0.0.zip
+          echo '111201a6f6b85e05794e1d40bf6a6a578bd5624ea8a90ecaf76eaaa7778c1404  docs/downloads/PCI_DSS_Implementation_Toolkit_v1.0.0.zip' | sha256sum --check --strict
+          cp scripts/stable-manifest.json docs/downloads/manifest.json
+          python - <<'PY'
+          import hashlib,json,pathlib,zipfile,csv,io
+          a=pathlib.Path("docs/downloads/PCI_DSS_Implementation_Toolkit_v1.0.0.zip")
+          m=json.loads(pathlib.Path("docs/downloads/manifest.json").read_text())["next"]
+          assert hashlib.sha256(a.read_bytes()).hexdigest()==m["sha256"]
+          with zipfile.ZipFile(a) as z:
+              assert z.testzip() is None and len(z.namelist())==90
+              rows=list(csv.DictReader(io.StringIO(z.read("toolkit/readiness_pack/Evidence_Pack_Index.csv").decode("utf-8-sig"))))
+              assert len(rows)==88
+              for row in rows: assert hashlib.sha256(z.read(row["Path relative to reader root"])).hexdigest()==row["SHA-256"]
+          PY
+          git switch -c release/v1.0.0-prepared
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/downloads/PCI_DSS_Implementation_Toolkit_v1.0.0.zip docs/downloads/manifest.json
+          git commit -m "Prepare stable v1.0.0 reader bytes from approved RC19"
+          git push origin HEAD:refs/heads/release/v1.0.0-prepared

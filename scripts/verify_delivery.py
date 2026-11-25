@@ -14,7 +14,7 @@ archive = manifest.parent / spec["archive"]
 if not archive.is_file():
     spec = data["current"]
     archive = manifest.parent / spec["archive"]
-assert re.fullmatch(r"PCI_DSS_Implementation_Toolkit_RC[0-9]+\.zip", spec["archive"])
+assert re.fullmatch(r"PCI_DSS_Implementation_Toolkit_(?:RC[0-9]+|v[0-9]+\.[0-9]+\.[0-9]+)\.zip", spec["archive"])
 assert re.fullmatch(r"[0-9a-f]{64}", spec["sha256"])
 assert re.fullmatch(r"(?:rc[0-9]+-preview|v[0-9]+\.[0-9]+\.[0-9]+(?:-rc\.[0-9]+)?)", spec["tag"])
 assert spec["channel"] in {"preview", "candidate", "stable"}
