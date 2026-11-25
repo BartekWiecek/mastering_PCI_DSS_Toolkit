@@ -2,15 +2,6 @@
   "schema": 1,
   "distribution": "Independent educational companion; no compliance assertion.",
   "current": {
-    "tag": "rc8-preview",
-    "channel": "preview",
-    "archive": "PCI_DSS_Implementation_Toolkit_RC8.zip",
-    "sha256": "83d54ddb5495faa1e5ae31e0cb96bc5e2831d3bad7157323566c1b92f9949dc5",
-    "files": 86,
-    "index_rows": 84,
-    "review": "preview"
-  },
-  "next": {
     "tag": "v1.0.0-rc.1",
     "channel": "candidate",
     "archive": "PCI_DSS_Implementation_Toolkit_RC14.zip",
@@ -19,5 +10,15 @@
     "index_rows": 85,
     "review": "pending",
     "compatibility": "Mastering PCI DSS 4.0.1 Compliance — RC14 editorial candidate"
+  },
+  "next": {
+    "tag": "v1.0.0-rc.2",
+    "channel": "candidate",
+    "archive": "PCI_DSS_Implementation_Toolkit_RC19.zip",
+    "sha256": "3123c2dd3e6d702657b5ecdeda397aef113224c73b3d196f5781d604a22eb835",
+    "files": 90,
+    "index_rows": 88,
+    "review": "pending",
+    "compatibility": "Mastering PCI DSS 4.0.1 Compliance — RC19 editorial candidate; 277 task drafts, 508 active test-specific evidence preparation prompts."
   }
 }

@@ -6,6 +6,8 @@ Reader companion for *Mastering PCI DSS 4.0.1 Compliance: A Practical Guide for 
 
 See [versioned releases](https://github.com/BartekWiecek/mastering_PCI_DSS_Toolkit/releases) and [errata](docs/errata.md). Choose an edition-compatible, accepted release. Previews and candidates are not final edition releases. No official PCI SSC or ISO standards, book manuscript or private assessment materials belong in this public repository.
 
+Current public candidate: `v1.0.0-rc.1` (RC14). The next candidate `v1.0.0-rc.2` (RC19) is staged for exact-byte delivery verification. The final stable release remains subject to editorial acceptance.
+
 ## Start
 
 Extract the full ZIP. Read toolkit/README.md. Choose the blank or fictional TechSphere workbook; retain its matching CSV registers. The additional requirement navigation identifies proposed work areas, not completed control tests. Follow the local synthetic labs on an authorized system; never supply live account data or secrets.
