@@ -1,0 +1,80 @@
+name: Publish verified RC8 preview
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/downloads/PCI_DSS_Implementation_Toolkit_RC8.zip'
+      - 'docs/downloads/SHA256SUMS_RC8.txt'
+      - '.github/workflows/rc8-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: rc8-preview-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify the exact approved preview archive
+        id: verify
+        shell: bash
+        run: |
+          cd docs/downloads
+          archive=PCI_DSS_Implementation_Toolkit_RC8.zip
+          if [[ ! -f "$archive" ]]; then
+            echo "Archive has not been added; no release will be created."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "83d54ddb5495faa1e5ae31e0cb96bc5e2831d3bad7157323566c1b92f9949dc5  $archive" | sha256sum --check --strict
+          sha256sum --check --strict SHA256SUMS_RC8.txt
+          python - <<'PY'
+          import csv, hashlib, io, pathlib, zipfile
+          with zipfile.ZipFile("PCI_DSS_Implementation_Toolkit_RC8.zip") as z:
+              names = z.namelist()
+              assert len(names) == len(set(names)) == 86
+              assert z.testzip() is None
+              for name in names:
+                  path = pathlib.PurePosixPath(name)
+                  assert not path.is_absolute() and ".." not in path.parts and chr(92) not in name
+                  assert name == "README.md" or path.parts[0] in {"toolkit", "labs"}
+                  assert path.suffix in {".csv", ".docx", ".json", ".log", ".md", ".py", ".xlsx"}
+              index = "toolkit/readiness_pack/Evidence_Pack_Index.csv"
+              rows = list(csv.DictReader(io.StringIO(z.read(index).decode("utf-8-sig"))))
+              assert len(rows) == 84
+              indexed = set()
+              for row in rows:
+                  path = row["Path relative to reader root"]
+                  assert path in names and path not in indexed
+                  assert hashlib.sha256(z.read(path)).hexdigest() == row["SHA-256"].lower()
+                  indexed.add(path)
+              assert set(names) - indexed == {"README.md", index}
+          print("86 files; archive CRC and 84 evidence-index hashes verified")
+          PY
+          echo "available=true" >> "$GITHUB_OUTPUT"
+      - name: Publish immutable pre-release
+        if: steps.verify.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=rc8-preview
+          archive=PCI_DSS_Implementation_Toolkit_RC8.zip
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            tmp="$(mktemp -d)"
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir "$tmp" --pattern "$archive" --pattern SHA256SUMS_RC8.txt
+            cmp "$tmp/$archive" "docs/downloads/$archive"
+            cmp "$tmp/SHA256SUMS_RC8.txt" docs/downloads/SHA256SUMS_RC8.txt
+            echo "Existing release has identical bytes; no replacement performed."
+          else
+            gh release create "$tag" "docs/downloads/$archive" docs/downloads/SHA256SUMS_RC8.txt \
+              --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --prerelease --latest=false --title "Implementation Toolkit — RC8 preview" \
+              --notes "Educational preview for PCI DSS v4.0.1. Not a final book-edition release or an assessment. Contains fictional examples and synthetic labs. Verify the SHA-256 checksum. Full calendar semantic review remains open."
+          fi
