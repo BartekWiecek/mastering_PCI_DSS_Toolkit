@@ -1,6 +1,6 @@
 # Mastering PCI DSS — Implementation Toolkit
 
-Reader companion for *Mastering PCI DSS 4.0.1 Compliance: A Practical Guide for E-commerce Systems* by Bartosz Więcek.
+Reader companion for *Mastering PCI DSS 4.0.1 Compliance: A Practical Guide for E-commerce Systems*, Third Extended Edition, by Bartosz Więcek. Edition 3 is the selected book release; KDP publication remains a separate process.
 
 **Reader website:** https://bartekwiecek.github.io/mastering_PCI_DSS_Toolkit/
 
