@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 ROOT = "https://bartekwiecek.github.io/mastering_PCI_DSS_Toolkit/"
 REPO = "https://github.com/BartekWiecek/mastering_PCI_DSS_Toolkit"
 manifest = json.loads(pathlib.Path("docs/downloads/manifest.json").read_text())
-spec = manifest["next"]
+spec = manifest["current"]
 digest = spec["sha256"]
 archive = spec["archive"]
 tag = spec["tag"]
@@ -21,7 +21,7 @@ def check_bytes(data):
 for attempt in range(12):
     try:
         deployed=json.loads(fetch(ROOT+"downloads/manifest.json?check="+str(time.time_ns())))
-        assert deployed["next"] == spec
+        assert deployed["schema"] == 2 and deployed["current"] == spec and "next" not in deployed
         report["checks"]["pages_zip_bytes"] = check_bytes(fetch(ROOT+"downloads/"+archive))
         break
     except Exception as e:
@@ -39,6 +39,30 @@ for attempt in range(16):
 checksum=fetch(REPO+"/releases/download/"+tag+"/SHA256SUMS.txt").decode()
 assert checksum.strip()==digest+"  "+archive
 report["checks"]["release_checksum"]="PASS"
+# Previews must not be offered through the public release or Pages surfaces.
+from urllib.error import HTTPError
+retired = [("rc8-preview","PCI_DSS_Implementation_Toolkit_RC8.zip"),("v1.0.0-rc.1","PCI_DSS_Implementation_Toolkit_RC14.zip"),("v1.0.0-rc.2","PCI_DSS_Implementation_Toolkit_RC19.zip")]
+def gone(url):
+    try:
+        fetch(url)
+        return False
+    except HTTPError as e:
+        if e.code in (404,410): return True
+        raise
+for attempt in range(20):
+    try:
+        listing=json.loads(fetch("https://api.github.com/repos/BartekWiecek/mastering_PCI_DSS_Toolkit/releases?per_page=100"))
+        assert all(not r["prerelease"] and not r["draft"] for r in listing)
+        assert {r["tag_name"] for r in listing} == {tag}
+        for retired_tag, retired_archive in retired:
+            assert gone(ROOT+"downloads/"+retired_archive+"?check="+str(time.time_ns()))
+            assert gone(REPO+"/releases/download/"+retired_tag+"/"+retired_archive)
+        break
+    except Exception as e:
+        print("Retirement propagation attempt",attempt+1,repr(e),flush=True)
+        if attempt==19: raise
+        time.sleep(15)
+report["checks"]["obsolete_public_downloads_withdrawn"]="PASS"
 async def main():
     async with async_playwright() as p:
         browser=await p.chromium.launch(headless=True)
@@ -47,9 +71,12 @@ async def main():
         await page.goto(ROOT,wait_until="domcontentloaded")
         card=page.locator(".release-card").filter(has=page.get_by_role("heading",name=tag,exact=True))
         await card.wait_for(timeout=60000)
-        assert await card.locator(".badge").inner_text()==spec["channel"].upper()
+        assert await card.locator(".badge").inner_text()=="STABLE"
+        assert await page.locator(".release-card").count()==1
+        assert await page.get_by_role("heading",name="Put PCI DSS into practice",exact=True).count()==1
+        report["checks"]["single_stable_download"]="PASS"
         async with page.expect_download(timeout=60000) as d:
-            await card.get_by_role("button",name="Download and verify ZIP").click()
+            await card.get_by_role("button",name="Download Toolkit ZIP").click()
         download=await d.value
         assert download.suggested_filename==archive
         check_bytes(pathlib.Path(await download.path()).read_bytes())
@@ -59,7 +86,7 @@ async def main():
         await page.route("**/downloads/"+archive,lambda route: route.fulfill(status=200,body=b"not the approved ZIP",content_type="application/zip"))
         started=[]
         page.on("download",lambda d: started.append(d))
-        await card.get_by_role("button",name="Download and verify ZIP").click()
+        await card.get_by_role("button",name="Download Toolkit ZIP").click()
         await card.get_by_role("status").get_by_text("Download not verified.",exact=False).wait_for(timeout=15000)
         assert not started
         report["checks"]["corruption_rejected"]="PASS"
@@ -70,7 +97,7 @@ async def main():
         card=page.locator(".release-card").filter(has=page.get_by_role("heading",name=tag,exact=True))
         await card.wait_for(timeout=60000)
         assert await page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
-        assert await card.get_by_role("button",name="Download and verify ZIP").is_enabled()
+        assert await card.get_by_role("button",name="Download Toolkit ZIP").is_enabled()
         report["checks"]["mobile_layout"]="PASS"
         await browser.close()
 asyncio.run(main())

@@ -9,17 +9,13 @@ p.add_argument("--report", default="delivery-test-report.json")
 a = p.parse_args()
 manifest = pathlib.Path(a.manifest)
 data = json.loads(manifest.read_text())
-spec = data["next"]
+assert data["schema"] == 2
+spec = data["current"]
 archive = manifest.parent / spec["archive"]
-if not archive.is_file():
-    spec = data["current"]
-    archive = manifest.parent / spec["archive"]
-assert re.fullmatch(r"PCI_DSS_Implementation_Toolkit_(?:RC[0-9]+|v[0-9]+\.[0-9]+\.[0-9]+)\.zip", spec["archive"])
+assert spec["channel"] == "stable" and spec["review"] == "accepted"
+assert re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", spec["tag"])
+assert spec["archive"] == "PCI_DSS_Implementation_Toolkit_" + spec["tag"] + ".zip"
 assert re.fullmatch(r"[0-9a-f]{64}", spec["sha256"])
-assert re.fullmatch(r"(?:rc[0-9]+-preview|v[0-9]+\.[0-9]+\.[0-9]+(?:-rc\.[0-9]+)?)", spec["tag"])
-assert spec["channel"] in {"preview", "candidate", "stable"}
-if spec["channel"] == "stable":
-    assert spec["review"] == "accepted" and re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", spec["tag"])
 digest = hashlib.sha256(archive.read_bytes()).hexdigest()
 assert digest == spec["sha256"], "Archive digest mismatch"
 results = []

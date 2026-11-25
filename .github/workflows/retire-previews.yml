@@ -1,0 +1,26 @@
+name: Retire obsolete public reader previews
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/retire_previews.py'
+      - '.github/workflows/retire-previews.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: retire-obsolete-previews
+  cancel-in-progress: false
+jobs:
+  retire:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Retire exact known previews; preserve stable archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/retire_previews.py

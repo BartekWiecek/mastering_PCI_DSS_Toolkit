@@ -1,7 +1,9 @@
-# Errata and updates
+# Updates and errata
 
-Use the release notes and matching checksum. The stable educational reader Toolkit v1.0.0 is based on RC19 and is the companion for the Third Extended Edition (edition 3). The edition choice has been confirmed by the author; the v1.0.0 ZIP and its checksum are unchanged. The book's publication status and real-world assessment outcomes are separate. The site offers the archive only after its verified release is available.
+**Current release: v1.0.0.** This is the stable companion for the Third Extended Edition.
 
-Previous releases: RC8 (preview), RC14 (v1.0.0-rc.1) and RC19 (v1.0.0-rc.2). They are retained unchanged. v1.0.0 changes publication wording and the artifact index, not the technical tasks, workbooks or labs. Suggested tasks and evidence prompts are not official procedures or completed assessments.
+There are no published corrections to this stable archive at present. Check the release notes for any later updates. The ZIP and its SHA-256 checksum remain unchanged.
 
-Report issues without including payment data, credentials, confidential evidence or licensed standards.
+[Release notes and checksum](https://github.com/BartekWiecek/mastering_PCI_DSS_Toolkit/releases/tag/v1.0.0) · [Report an issue](https://github.com/BartekWiecek/mastering_PCI_DSS_Toolkit/issues)
+
+If you downloaded an earlier preview, replace it with the current stable Toolkit. Never include payment data, credentials, confidential evidence or licensed standards in a report.

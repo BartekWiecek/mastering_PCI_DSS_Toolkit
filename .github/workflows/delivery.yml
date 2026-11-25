@@ -16,7 +16,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     outputs:
-      next_ready: ${{ steps.target.outputs.next_ready }}
+      release_ready: ${{ steps.target.outputs.release_ready }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,9 +36,9 @@ jobs:
           import json, os, pathlib
           m=json.loads(pathlib.Path("docs/downloads/manifest.json").read_text())
           r=json.loads(pathlib.Path("delivery-test-report.json").read_text())
-          ok=r["sha256"]==m["next"]["sha256"] and r["tag"]==m["next"]["tag"]
+          ok=r["sha256"]==m["current"]["sha256"] and r["tag"]==m["current"]["tag"]
           with open(os.environ["GITHUB_OUTPUT"],"a") as f:
-              f.write("next_ready="+str(ok).lower()+"\n")
+              f.write("release_ready="+str(ok).lower()+"\n")
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -46,7 +46,7 @@ jobs:
           path: delivery-test-report.json
   publish:
     needs: verify
-    if: github.ref == 'refs/heads/main' && needs.verify.outputs.next_ready == 'true'
+    if: github.ref == 'refs/heads/main' && needs.verify.outputs.release_ready == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -63,16 +63,12 @@ jobs:
         run: |
           python - <<'PY'
           import hashlib,json,pathlib,re,subprocess,os,tempfile
-          s=json.loads(pathlib.Path("docs/downloads/manifest.json").read_text())["next"]
+          s=json.loads(pathlib.Path("docs/downloads/manifest.json").read_text())["current"]
           r=json.loads(pathlib.Path("delivery-test-report.json").read_text())
           a=pathlib.Path("docs/downloads")/s["archive"]
           assert r["tag"]==s["tag"] and r["sha256"]==s["sha256"]==hashlib.sha256(a.read_bytes()).hexdigest()
           assert r["local_tests"]==56 and r["browser"]["status"]=="PASS_SYNTHETIC"
-          stable=s["channel"]=="stable"
-          if stable:
-              assert s["review"]=="accepted" and re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+",s["tag"])
-          else:
-              assert s["channel"]=="candidate" and re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+",s["tag"])
+          assert s["channel"]=="stable" and s["review"]=="accepted" and re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+",s["tag"])
           tag=s["tag"]; repo=os.environ["GITHUB_REPOSITORY"]
           checksum=pathlib.Path("SHA256SUMS.txt"); checksum.write_text(s["sha256"]+"  "+a.name+"\n")
           args=["gh","release","view",tag,"--repo",repo]
@@ -84,6 +80,6 @@ jobs:
           else:
               notes="Independent educational materials. Synthetic CI tests passed; not an assessment or guarantee of PCI DSS compliance. "+s.get("compatibility","")
               command=["gh","release","create",tag,str(a),str(checksum),"delivery-test-report.json","--repo",repo,"--target",os.environ["GITHUB_SHA"],"--title","Toolkit "+tag,"--notes",notes]
-              command+=["--latest"] if stable else ["--prerelease","--latest=false"]
+              command+=["--latest"]
               subprocess.run(command,check=True)
           PY
