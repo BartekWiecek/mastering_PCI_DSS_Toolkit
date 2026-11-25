@@ -1,10 +1,7 @@
 # Errata and updates
 
-The reader Toolkit is versioned independently of the book. Check release notes for compatibility and verification evidence.
+Use the release notes and matching checksum. The stable educational reader Toolkit v1.0.0 is based on RC19 and is compatible with the revised Second or Third Edition. The book's publication status and real-world assessment outcomes are separate. The site offers the archive only after its verified release is available.
 
-- RC8: historical preview, retained unchanged.
-- RC14 / v1.0.0-rc.1: published candidate; exact-byte local and browser CI passed.
-- RC19 / v1.0.0-rc.2: staged candidate. Adds a task-specific evidence-preparation prompt for all 508 active defined testing identifiers (four historical identifiers retained separately), 277 task drafts, and reporting handoff guidance. It preserves the operational workbook baseline. Publication requires the exact archive and successful delivery CI. The prompts do not replace official procedures or constitute an assessment.
-- Stable 1.0.0: not yet accepted. Editorial and publication gates must be satisfied.
+Previous releases: RC8 (preview), RC14 (v1.0.0-rc.1) and RC19 (v1.0.0-rc.2). They are retained unchanged. v1.0.0 changes publication wording and the artifact index, not the technical tasks, workbooks or labs. Suggested tasks and evidence prompts are not official procedures or completed assessments.
 
-Report errors in GitHub Issues. Do not include card data, secrets, real customer evidence or licensed text.
+Report issues without including payment data, credentials, confidential evidence or licensed standards.
