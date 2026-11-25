@@ -1,16 +1,12 @@
-# Maintaining the reader distribution
+# Maintain the Toolkit delivery site
 
-Keep this repository public and separate from the private author project.
+The Pages site is served from docs/ on main. Keep the permanent reader URL unchanged.
 
-## Initial preview
+## New delivery
+1. Freeze the reviewed reader ZIP. Never upload the publishing package, licensed standards, signed AOCs or internal reviewer records.
+2. Set a new versioned filename, exact SHA-256, member count, index count and compatibility in docs/downloads/manifest.json. Upload only the corresponding reader ZIP to docs/downloads/.
+3. The Verified Toolkit delivery workflow validates paths, CRC, SHA-256 and evidence index; executes 56 synthetic tests and six browser cases; and publishes only the exact tested bytes. Review logs and the delivery report. A missing next archive tests the existing preview instead, without publishing a new release.
+4. A candidate uses a vX.Y.Z-rc.N tag. A stable version uses vX.Y.Z, channel stable and review accepted, only after editorial acceptance. Never rename a candidate as stable just to bypass review. The workflow refuses to replace bytes of existing release assets.
+5. Test the public Pages site and direct release download anonymously. Verify the SHA-256, extract and open both workbooks. Confirm the correct edition and errata. If status checks fail, use release history and verify the file locally.
 
-1. Add the exact `docs/downloads/PCI_DSS_Implementation_Toolkit_RC8.zip` archive. Its SHA-256 is `83d54ddb5495faa1e5ae31e0cb96bc5e2831d3bad7157323566c1b92f9949dc5`. Do not upload the manuscript or the complete publishing package.
-2. In Settings → Pages, choose **Deploy from a branch**, `main`, `/docs`. Save. The anticipated reader address is `https://bartekwiecek.github.io/mastering_PCI_DSS_Toolkit/`. Verify it as an anonymous visitor before printing it in the book.
-3. The preview publication workflow verifies the archive on upload and creates a versioned **pre-release**. If Actions cannot run, create a GitHub pre-release named `rc8-preview` and attach the exact ZIP and its checksum after independent verification.
-4. Confirm the anonymous website and release asset download, hash, extraction and basic usability. Only then update the manuscript's companion link.
-
-## Future versions
-
-Use immutable versioned filenames and tags. A final release must explicitly identify its book edition; do not promote an RC to a final release by changing its label. Update the landing page, checksums, errata and compatibility information. Keep older editions available. Do not publish official source documents, real assessment evidence, secrets, private project files, or a full book manuscript.
-
-Do not assign a permissive license without author approval. Keep the reader-use permission consistent with the book.
+RC8 remains an earlier preview. RC14 is staged as the first 1.0 candidate; the ZIP must be uploaded. The stable gate is not accepted yet. All lab results are synthetic and are not evidence of production PCI DSS compliance.

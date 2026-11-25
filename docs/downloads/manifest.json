@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "distribution": "Independent educational companion; no compliance assertion.",
+  "current": {
+    "tag": "rc8-preview",
+    "channel": "preview",
+    "archive": "PCI_DSS_Implementation_Toolkit_RC8.zip",
+    "sha256": "83d54ddb5495faa1e5ae31e0cb96bc5e2831d3bad7157323566c1b92f9949dc5",
+    "files": 86,
+    "index_rows": 84,
+    "review": "preview"
+  },
+  "next": {
+    "tag": "v1.0.0-rc.1",
+    "channel": "candidate",
+    "archive": "PCI_DSS_Implementation_Toolkit_RC14.zip",
+    "sha256": "e8adcfe057e8a88d3ad0543085bf0efb1a661be2dbf8c25f8af08b35faeffe0c",
+    "files": 87,
+    "index_rows": 85,
+    "review": "pending",
+    "compatibility": "Mastering PCI DSS 4.0.1 Compliance — RC14 editorial candidate"
+  }
+}

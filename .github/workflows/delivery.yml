@@ -1,0 +1,89 @@
+name: Verified Toolkit delivery
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/downloads/**'
+      - 'scripts/verify_delivery.py'
+      - '.github/workflows/delivery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: toolkit-delivery
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      next_ready: ${{ steps.target.outputs.next_ready }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate and test exact reader bytes
+        run: |
+          python -m pip install cryptography playwright
+          python -m playwright install --with-deps chromium
+          python scripts/verify_delivery.py --browser
+      - name: Select publish target
+        id: target
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          m=json.loads(pathlib.Path("docs/downloads/manifest.json").read_text())
+          r=json.loads(pathlib.Path("delivery-test-report.json").read_text())
+          ok=r["sha256"]==m["next"]["sha256"] and r["tag"]==m["next"]["tag"]
+          with open(os.environ["GITHUB_OUTPUT"],"a") as f:
+              f.write("next_ready="+str(ok).lower()+"\n")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-delivery
+          path: delivery-test-report.json
+  publish:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && needs.verify.outputs.next_ready == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-delivery
+      - name: Publish exact tested bytes once
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import hashlib,json,pathlib,re,subprocess,os,tempfile
+          s=json.loads(pathlib.Path("docs/downloads/manifest.json").read_text())["next"]
+          r=json.loads(pathlib.Path("delivery-test-report.json").read_text())
+          a=pathlib.Path("docs/downloads")/s["archive"]
+          assert r["tag"]==s["tag"] and r["sha256"]==s["sha256"]==hashlib.sha256(a.read_bytes()).hexdigest()
+          assert r["local_tests"]==56 and r["browser"]["status"]=="PASS_SYNTHETIC"
+          stable=s["channel"]=="stable"
+          if stable:
+              assert s["review"]=="accepted" and re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+",s["tag"])
+          else:
+              assert s["channel"]=="candidate" and re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+",s["tag"])
+          tag=s["tag"]; repo=os.environ["GITHUB_REPOSITORY"]
+          checksum=pathlib.Path("SHA256SUMS.txt"); checksum.write_text(s["sha256"]+"  "+a.name+"\n")
+          args=["gh","release","view",tag,"--repo",repo]
+          if subprocess.run(args,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:
+              with tempfile.TemporaryDirectory() as temp:
+                  subprocess.run(["gh","release","download",tag,"--repo",repo,"--dir",temp,"--pattern",a.name],check=True)
+                  assert hashlib.sha256((pathlib.Path(temp)/a.name).read_bytes()).hexdigest()==s["sha256"]
+              print("Existing immutable release matches; no replacement.")
+          else:
+              notes="Independent educational materials. Synthetic CI tests passed; not an assessment or guarantee of PCI DSS compliance. "+s.get("compatibility","")
+              command=["gh","release","create",tag,str(a),str(checksum),"delivery-test-report.json","--repo",repo,"--target",os.environ["GITHUB_SHA"],"--title","Toolkit "+tag,"--notes",notes]
+              command+=["--latest"] if stable else ["--prerelease","--latest=false"]
+              subprocess.run(command,check=True)
+          PY

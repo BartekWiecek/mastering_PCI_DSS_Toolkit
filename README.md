@@ -1,26 +1,17 @@
 # Mastering PCI DSS — Implementation Toolkit
 
-Companion materials for *Mastering PCI DSS 4.0.1 Compliance: A Practical Guide for E-commerce Systems* by Bartosz Więcek.
+Reader companion for *Mastering PCI DSS 4.0.1 Compliance: A Practical Guide for E-commerce Systems* by Bartosz Więcek.
 
-**This repository is the reader-facing distribution channel, not the manuscript repository.**
+**Reader website:** https://bartekwiecek.github.io/mastering_PCI_DSS_Toolkit/
 
-## Get the Toolkit
+See [versioned releases](https://github.com/BartekWiecek/mastering_PCI_DSS_Toolkit/releases) and [errata](docs/errata.md). Choose an edition-compatible, accepted release. Previews and candidates are not final edition releases. No official PCI SSC or ISO standards, book manuscript or private assessment materials belong in this public repository.
 
-- [Reader website](https://bartekwiecek.github.io/mastering_PCI_DSS_Toolkit/) (requires GitHub Pages to be enabled)
-- [Versioned downloads and release notes](https://github.com/BartekWiecek/mastering_PCI_DSS_Toolkit/releases)
-- [Download directory and checksums](docs/downloads/)
-- [Errata](docs/errata.md) · [Terms of use](docs/terms.md)
+## Start
 
-The initial package is **RC8 preview**, an educational release candidate rather than a final book-edition release. The ZIP becomes available when its exact verified archive has been added. Future final releases will identify the compatible book edition.
+Extract the full ZIP. Read toolkit/README.md. Choose the blank or fictional TechSphere workbook; retain its matching CSV registers. The additional requirement navigation identifies proposed work areas, not completed control tests. Follow the local synthetic labs on an authorized system; never supply live account data or secrets.
 
-## What's inside
+## Distribution integrity
 
-Two editable implementation workbooks (blank and fictional TechSphere), CSV registers, document templates, a control calendar, requirement and assessment-form navigation, an evidence-pack index and five synthetic labs.
+Every new candidate must pass archive/hash/index validation, 56 local synthetic tests and six browser cases in CI before a release is created. Stable promotion also requires an accepted editorial review recorded in the manifest. Published assets are immutable; new bytes require a new version. See [maintenance instructions](MAINTAINING.md), [terms](docs/terms.md) and [release history](https://github.com/BartekWiecek/mastering_PCI_DSS_Toolkit/releases).
 
-Extract the entire archive and read `toolkit/README.md`. Use synthetic data only. The tools do not establish compliance, determine SAQ eligibility or replace the applicable PCI SSC standard, reporting forms or assessment process. A calendar entry is a planning aid, not proof of applicability or a completed obligation.
-
-## Feedback
-
-Use [GitHub Issues](https://github.com/BartekWiecek/mastering_PCI_DSS_Toolkit/issues) for reproducible documentation or Toolkit problems. Do not submit payment data, credentials, private assessment reports or customer information.
-
-No full PCI SSC or ISO standards, official forms or third-party assessment reports are distributed here. See [terms of use](docs/terms.md).
+Educational materials only. Not an assessment, certification or guarantee of compliance.
